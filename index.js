@@ -27,8 +27,9 @@ module.exports = (sessionOptions) => {
   app.use('/', require('./src/routes'));
 
   app.use((err, req, res, next) => {
-    console.log(err);
-    return res.send('<h1>There was an error please try again</h1>');
+    const errorMsg = typeof err === 'string' ? err : 'Something went wrong';
+
+    return res.status(500).send(errorMsg);
   });
 
   return app;

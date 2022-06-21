@@ -1,8 +1,11 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const userService = require('../services')('User');
 const { authUtils } = require('../lib');
+const { google } = require('.');
 
+// Change this obj to macth your login/signup credentials
 const customFields = {
   usernameField: 'email',
   passwordField: 'password',
@@ -30,7 +33,40 @@ const verifyCallback = (email, password, done) => {
 };
 
 const strategy = new LocalStrategy(customFields, verifyCallback);
+const googleStrategyConfig = {
+  clientID: google.clientID,
+  clientSecret: google.clientSECRET,
+  callbackURL: google.callback,
+  passReqToCallback: true,
+};
 
+const googleCallback = (request, accessToken, refreshToken, profile, done) => {
+  const { id, displayName, emails } = profile;
+  const email = emails[0].value;
+
+  // Get user
+  userService.getItem({ email }).then((user) => {
+    if (!user) {
+      // If no user was found create that user
+      userService
+        .create({
+          googleID: id,
+          username: displayName,
+          email,
+        })
+        .then((result) => {
+          return done(null, result);
+        })
+        .catch((err) => done(err, false));
+    }
+
+    return done(null, user);
+  });
+};
+
+const googleStrategy = new GoogleStrategy(googleStrategyConfig, googleCallback);
+
+passport.use(googleStrategy);
 passport.use(strategy);
 
 passport.serializeUser((user, done) => {

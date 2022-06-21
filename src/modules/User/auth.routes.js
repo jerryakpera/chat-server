@@ -1,19 +1,20 @@
 const router = require('express').Router();
-const passport = require('./config/passport');
-const userService = require('./services')('User');
-const { authUtils } = require('./lib');
-const { isAuth } = require('./middleware/auth-middleware');
+const passport = require('../../config/passport');
+const { successRedirect } = require('../../config');
+const userService = require('../../services')('User');
+const { authUtils } = require('../../lib');
+const { isAuth } = require('../../middleware/auth-middleware');
 
 router.get(
-  '/auth/google',
+  '/google',
   passport.authenticate('google', { scope: ['email', 'profile'] })
 );
 
 router.get(
-  '/auth/google/callback',
+  '/google/callback',
   passport.authenticate('google'),
   async (req, res, next) => {
-    return res.redirect('http://localhost:9000/');
+    return res.redirect(successRedirect);
   }
 );
 
@@ -65,10 +66,6 @@ router.post('/logout', (req, res, next) => {
 
     return res.send('OK');
   });
-});
-
-router.get('/protected', (req, res, next) => {
-  return res.send('<h1>You have visited this page times!</h1>');
 });
 
 module.exports = router;
