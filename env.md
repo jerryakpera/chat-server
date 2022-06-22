@@ -1,9 +1,0 @@
-<!-- PORT=PORT you wish app to run on -->
-<!-- DB_URL=Db url string without the name of the db -->
-<!-- DB_NAME=Db name -> this is appended to the db url later  -->
-<!-- SESSION_NAME=Session Name  -->
-<!-- SESSION_SECRET=SESSION SECRET  -->
-<!-- GOOGLE_CLIENT_ID=GOOGLE client ID obtained from https://console.cloud.google.com/ -->
-<!-- GOOGLE_CLIENT_SECRET=GOOGLE client SECRET obtained from https://console.cloud.google.com/ -->
-<!-- GOOGLE_CLIENT_CALLBACK= callback url that google hits on successful obtaining of user profile -->
-<!-- SUCCESS_REDIRECT= Where the front end should redirect to on successful google auth -->
