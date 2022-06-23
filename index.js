@@ -24,12 +24,17 @@ module.exports = (sessionOptions) => {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  app.use('/', require('./src/routes'));
+  app.use('/gist/api/v1', require('./src/routes'));
+
+  app.use((req, res, next) => {
+    return next({ code: 404, message: 'Not found' });
+  });
 
   app.use((err, req, res, next) => {
-    const errorMsg = typeof err === 'string' ? err : 'Something went wrong';
+    console.log(err.message);
+    const { code, message } = err;
 
-    return res.status(500).send(errorMsg);
+    return res.status(code).send(message);
   });
 
   return app;

@@ -16,13 +16,17 @@ const verifyCallback = (email, password, done) => {
     // Check if a user was found
     if (!user) return done(null, false);
 
+    if (!user.password && user.googleID) {
+      return done({ code: 401, message: 'Sign in with Google' }, false);
+    }
+
     // Check if password is correct
     return authUtils
       .comparePasswords(password, user.password)
       .then((value) => {
         // If the password does not match
         if (!value) {
-          return done(null, false, { message: 'Password does not match' });
+          return done(null, false, { message: 'Incorrect email or password' });
         }
 
         // If the password is correct
@@ -40,28 +44,30 @@ const googleStrategyConfig = {
   passReqToCallback: true,
 };
 
-const googleCallback = (request, accessToken, refreshToken, profile, done) => {
+const googleCallback = async (
+  request,
+  accessToken,
+  refreshToken,
+  profile,
+  done
+) => {
   const { id, displayName, emails } = profile;
   const email = emails[0].value;
 
   // Get user
-  userService.getItem({ email }).then((user) => {
-    if (!user) {
-      // If no user was found create that user
-      userService
-        .create({
-          googleID: id,
-          username: displayName,
-          email,
-        })
-        .then((result) => {
-          return done(null, result);
-        })
-        .catch((err) => done(err, false));
-    }
+  const user = await userService.getItem({ email });
+  // User exists proceed
+  if (user) return done(null, user);
 
-    return done(null, user);
+  // User does not exists
+  // Create the user
+  const newUser = await userService.create({
+    googleID: id,
+    username: displayName,
+    email,
   });
+
+  return done(null, newUser);
 };
 
 const googleStrategy = new GoogleStrategy(googleStrategyConfig, googleCallback);

@@ -1,6 +1,7 @@
-const cors = require('cors');
-const http = require('http');
-const socketIO = require('socket.io');
+require('module-alias/register');
+
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 const getApp = require('..');
 const getDB = require('./config/db');
 const getSessionOptions = require('./middleware/session');
@@ -14,14 +15,24 @@ const dbConn = dbObj.connect(`${url}${name}`);
 const sessionOptions = getSessionOptions(dbConn, name);
 const app = getApp(sessionOptions);
 
-const server = http.createServer(app);
-const io = socketIO(server, {
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:9000',
     methods: ['GET', 'POST'],
   },
 });
 
-server.listen(port, () => {
-  console.log(`Auth API is on port ${port}`);
+httpServer.listen(port, () => {
+  console.log(`Gist Server API is on port ${port}`);
+});
+
+io.on('connection', (socket) => {
+  const { id } = socket;
+
+  // console.log(`${id} connected`);
+
+  socket.on('disconnect', () => {
+    // console.log(`${id} disconnected`);
+  });
 });
